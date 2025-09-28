@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: foodlydb
+      POSTGRES_USER: foodlyuser
+      POSTGRES_PASSWORD: foodlypass
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+    volumes:
+      - foodly_logs:/app/logs
+
+volumes:
+  db_data:
+  foodly_logs:
+
