@@ -18,7 +18,7 @@ def log_request_info():
 
 @app.route("/")
 def hello():
-    return "Hello from Foodly in Docker!"
+    return "Hello From Foodly in Docker :)"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
