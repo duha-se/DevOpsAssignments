@@ -1,18 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        DEPLOY_DIR = "/tmp/deploy" 
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/duha-se/DevOpsAssignments.git'
+                echo 'Checking out the code...'
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building Docker image...'
+                echo 'Building the app...'
                 dir('foodly-app') {
-                    sh 'docker build -t foodly-web .'
+                    sh 'pip install -r requirements.txt || echo "requirements not found"'
                 }
             }
         }
@@ -21,19 +26,30 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 dir('foodly-app') {
-                    sh '''
-                    pip install -r requirements.txt
-                    pytest || echo "No tests found"
-                    '''
+                    sh 'pytest || echo "No tests found"'
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying app...'
+                echo 'Deploying the app...'
                 dir('foodly-app') {
-                    sh 'docker-compose up -d || echo "docker-compose not found or not configured"'
+                    sh """
+                    mkdir -p ${DEPLOY_DIR}
+                    cp -r * ${DEPLOY_DIR}/
+                    """
+                    echo "App deployed successfully to ${DEPLOY_DIR}!"
+                }
+            }
+        }
+
+        stage('Run App') {
+            steps {
+                echo 'Running the app...'
+                dir('foodly-app') {
+                    sh 'nohup python app.py --port 9496 > /tmp/deploy/app.log 2>&1 &'
+                    echo 'App is running on port 9496'
                 }
             }
         }
